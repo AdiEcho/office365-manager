@@ -12,7 +12,7 @@ import { Domains } from './pages/Domains'
 import { Roles } from './pages/Roles'
 import { Reports } from './pages/Reports'
 import { Settings } from './pages/Settings'
-import { authApi } from './lib/api'
+import { authApi } from './utils/api'
 import { useAuthStore } from './store/auth'
 
 function App() {

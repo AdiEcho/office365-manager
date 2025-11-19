@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { tenantApi, type TenantCreate, type Tenant } from '@/lib/api'
+import { tenantApi, type TenantCreate, type Tenant } from '@/utils/api'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/dialog'
 import { Plus, Trash2, CheckCircle2, XCircle, Loader2, Edit2, Users, Award, Globe, ShieldCheck, FileText } from 'lucide-react'
 import toast from 'react-hot-toast'
-import { formatDate } from '@/lib/utils'
+import { formatDate } from '@/utils/utils'
 import { TenantLicensesSummary } from '@/components/TenantLicensesSummary'
 
 export function Tenants() {

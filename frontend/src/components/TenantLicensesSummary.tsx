@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
-import { licenseApi } from '@/lib/api'
-import { getLicenseName, formatLicenseUsage } from '@/lib/utils'
+import { licenseApi } from '@/utils/api'
+import { getLicenseName, formatLicenseUsage } from '@/utils/utils'
 import { Award, Loader2 } from 'lucide-react'
 
 interface TenantLicensesSummaryProps {

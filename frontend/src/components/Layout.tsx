@@ -9,7 +9,7 @@ import {
   User
 } from 'lucide-react'
 import { useState } from 'react'
-import { cn } from '@/lib/utils'
+import { cn } from '@/utils/utils'
 import { useAuthStore } from '@/store/auth'
 import toast from 'react-hot-toast'
 
