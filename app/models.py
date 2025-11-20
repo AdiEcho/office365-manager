@@ -60,3 +60,19 @@ class SystemConfig(Base):
     description = Column(Text)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+
+class LicenseCache(Base):
+    __tablename__ = "license_cache"
+    
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    tenant_id = Column(Integer, nullable=False, index=True)
+    sku_id = Column(String(100), nullable=False)
+    sku_part_number = Column(String(200), nullable=False)
+    sku_name_cn = Column(String(500))
+    consumed_units = Column(Integer, default=0)
+    enabled_units = Column(Integer, default=0)
+    available_units = Column(Integer, default=0)
+    cached_at = Column(DateTime(timezone=True), server_default=func.now())
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())

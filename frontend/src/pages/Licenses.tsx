@@ -1,11 +1,14 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useParams } from 'react-router-dom'
 import { licenseApi } from '@/utils/api'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Award, Loader2 } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Award, Loader2, RefreshCw } from 'lucide-react'
+import toast from 'react-hot-toast'
 
 export function Licenses() {
   const { tenantId } = useParams<{ tenantId: string }>()
+  const queryClient = useQueryClient()
   
   const { data: licenses, isLoading } = useQuery({
     queryKey: ['licenses', tenantId],
@@ -20,6 +23,24 @@ export function Licenses() {
     },
   })
 
+  const refreshMutation = useMutation({
+    mutationFn: async () => {
+      if (tenantId) {
+        const res = await licenseApi.listByTenant(parseInt(tenantId), true)
+        return res.data
+      } else {
+        throw new Error('刷新功能仅适用于租户许可证')
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['licenses', tenantId] })
+      toast.success('许可证数据已刷新')
+    },
+    onError: (error: Error) => {
+      toast.error(`刷新失败: ${error.message}`)
+    },
+  })
+
   const totalConsumed = licenses?.reduce((sum, lic) => sum + lic.consumed_units, 0) || 0
   const totalEnabled = licenses?.reduce((sum, lic) => sum + lic.enabled_units, 0) || 0
   const totalAvailable = licenses?.reduce((sum, lic) => sum + lic.available_units, 0) || 0
@@ -27,11 +48,32 @@ export function Licenses() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight">许可证管理</h2>
-        <p className="text-muted-foreground mt-2">
-          查看和管理 Office 365 许可证
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">许可证管理</h2>
+          <p className="text-muted-foreground mt-2">
+            查看和管理 Office 365 许可证
+          </p>
+        </div>
+        {tenantId && (
+          <Button
+            onClick={() => refreshMutation.mutate()}
+            disabled={refreshMutation.isPending || isLoading}
+            variant="outline"
+          >
+            {refreshMutation.isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                刷新中...
+              </>
+            ) : (
+              <>
+                <RefreshCw className="mr-2 h-4 w-4" />
+                刷新数据
+              </>
+            )}
+          </Button>
+        )}
       </div>
 
       {/* Summary Cards */}

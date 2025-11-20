@@ -1,16 +1,22 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, delete
 from typing import List
 import json
 import logging
 from pathlib import Path
+from datetime import datetime, timedelta
 from app.database import get_db
 from app.schemas import O365LicenseResponse
 from app.services.graph_service import GraphAPIService
 from app.api.o365_users import get_graph_service, get_graph_service_by_id
+from app.models import LicenseCache
 
 router = APIRouter(prefix="/api/o365/licenses", tags=["O365 Licenses"])
 logger = logging.getLogger(__name__)
+
+# Cache expiry time in hours
+CACHE_EXPIRY_HOURS = 24
 
 # Load SKU mapping
 SKU_MAP_PATH = Path(__file__).parent.parent / "sku_map.json"
@@ -82,11 +88,46 @@ async def list_licenses(
 @router.get("/tenant/{tenant_id}", response_model=List[O365LicenseResponse])
 async def list_licenses_by_tenant(
     tenant_id: int,
+    refresh: bool = Query(False, description="Force refresh from Microsoft Graph API"),
     db: AsyncSession = Depends(get_db)
 ):
-    """Get licenses for a specific tenant by ID"""
+    """Get licenses for a specific tenant by ID
+    
+    Args:
+        tenant_id: The tenant ID
+        refresh: If True, force refresh from Microsoft Graph API and update cache
+        db: Database session
+    """
     try:
-        logger.info(f"Fetching licenses for tenant ID: {tenant_id}")
+        logger.info(f"Fetching licenses for tenant ID: {tenant_id}, refresh={refresh}")
+        
+        # Check if we should use cache
+        if not refresh:
+            # Try to get from cache
+            cache_expiry = datetime.utcnow() - timedelta(hours=CACHE_EXPIRY_HOURS)
+            result = await db.execute(
+                select(LicenseCache)
+                .where(LicenseCache.tenant_id == tenant_id)
+                .where(LicenseCache.cached_at > cache_expiry)
+            )
+            cached_licenses = result.scalars().all()
+            
+            if cached_licenses:
+                logger.info(f"Using cached licenses for tenant {tenant_id}, {len(cached_licenses)} licenses found")
+                licenses = []
+                for cache in cached_licenses:
+                    licenses.append(O365LicenseResponse(
+                        sku_id=cache.sku_id,
+                        sku_part_number=cache.sku_part_number,
+                        sku_name_cn=cache.sku_name_cn,
+                        consumed_units=cache.consumed_units,
+                        enabled_units=cache.enabled_units,
+                        available_units=cache.available_units
+                    ))
+                return licenses
+        
+        # Cache miss or force refresh - fetch from Microsoft Graph API
+        logger.info(f"Cache miss or force refresh for tenant {tenant_id}, fetching from Microsoft Graph API")
         
         # Get graph service for the specific tenant
         graph_service = await get_graph_service_by_id(tenant_id, db)
@@ -96,20 +137,50 @@ async def list_licenses_by_tenant(
         skus = await graph_service.get_subscribed_skus()
         logger.debug(f"Received {len(skus)} SKUs from Graph API")
         
+        # Clear old cache for this tenant
+        await db.execute(
+            delete(LicenseCache).where(LicenseCache.tenant_id == tenant_id)
+        )
+        
+        # Build licenses and save to cache
         licenses = []
+        current_time = datetime.utcnow()
+        
         for sku in skus:
             prepaid_units = sku.get("prepaidUnits", {})
             sku_part_number = sku.get("skuPartNumber")
+            sku_id = sku.get("skuId")
+            consumed_units = sku.get("consumedUnits", 0)
+            enabled_units = prepaid_units.get("enabled", 0)
+            available_units = enabled_units - consumed_units
+            sku_name_cn = get_sku_name_cn(sku_part_number)
+            
+            # Add to response
             licenses.append(O365LicenseResponse(
-                sku_id=sku.get("skuId"),
+                sku_id=sku_id,
                 sku_part_number=sku_part_number,
-                sku_name_cn=get_sku_name_cn(sku_part_number),
-                consumed_units=sku.get("consumedUnits", 0),
-                enabled_units=prepaid_units.get("enabled", 0),
-                available_units=prepaid_units.get("enabled", 0) - sku.get("consumedUnits", 0)
+                sku_name_cn=sku_name_cn,
+                consumed_units=consumed_units,
+                enabled_units=enabled_units,
+                available_units=available_units
             ))
+            
+            # Save to cache
+            cache_entry = LicenseCache(
+                tenant_id=tenant_id,
+                sku_id=sku_id,
+                sku_part_number=sku_part_number,
+                sku_name_cn=sku_name_cn,
+                consumed_units=consumed_units,
+                enabled_units=enabled_units,
+                available_units=available_units,
+                cached_at=current_time
+            )
+            db.add(cache_entry)
         
-        logger.info(f"Successfully fetched {len(licenses)} licenses for tenant {tenant_id}")
+        await db.commit()
+        
+        logger.info(f"Successfully fetched and cached {len(licenses)} licenses for tenant {tenant_id}")
         return licenses
     except HTTPException as he:
         # Re-raise HTTPExceptions from get_graph_service_by_id

@@ -167,7 +167,8 @@ export const userApi = {
 // License APIs
 export const licenseApi = {
   list: () => api.get<License[]>('/o365/licenses'),
-  listByTenant: (tenantId: number) => api.get<License[]>(`/o365/licenses/tenant/${tenantId}`),
+  listByTenant: (tenantId: number, refresh?: boolean) => 
+    api.get<License[]>(`/o365/licenses/tenant/${tenantId}`, { params: { refresh } }),
 }
 
 // Domain APIs
