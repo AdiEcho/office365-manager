@@ -18,7 +18,7 @@ WORKDIR /app
 COPY pyproject.toml ./
 
 # 使用uv安装依赖
-RUN uv sync --frozen --no-dev
+RUN uv sync --no-dev
 
 # 复制应用代码
 COPY app/ ./app/
