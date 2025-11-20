@@ -591,7 +591,7 @@ o365-manager/
 
 ## 📄 许可证
 
-MIT License - 详见 [LICENSE](LICENSE) 文件
+AGPL3.0 License - 详见 [LICENSE](LICENSE) 文件
 
 ---
 
