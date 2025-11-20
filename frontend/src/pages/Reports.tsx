@@ -15,7 +15,7 @@ export function Reports() {
       try {
         const res = await reportApi.getOrganization()
         return res.data
-      } catch (error) {
+      } catch {
         return null
       }
     },

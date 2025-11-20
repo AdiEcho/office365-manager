@@ -15,7 +15,7 @@ export function TenantLicensesSummary({ tenantId, compact = false }: TenantLicen
       try {
         const res = await licenseApi.listByTenant(tenantId)
         return res.data
-      } catch (error) {
+      } catch {
         return []
       }
     },
