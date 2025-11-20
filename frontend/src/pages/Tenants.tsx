@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { tenantApi, type TenantCreate, type Tenant } from '@/utils/api'
+import { tenantApi, licenseApi, type TenantCreate, type Tenant } from '@/utils/api'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -13,7 +13,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
-import { Plus, Trash2, CheckCircle2, XCircle, Loader2, Edit2, Users, Award, Globe, ShieldCheck, FileText, RefreshCw, AlertCircle, Ban, HelpCircle, Key, ChevronUp, MoreHorizontal } from 'lucide-react'
+import { Plus, Trash2, CheckCircle2, XCircle, Loader2, Edit2, Users, Award, Globe, ShieldCheck, FileText, RefreshCw, AlertCircle, Ban, HelpCircle, Key, ChevronUp, MoreHorizontal, RotateCw } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { formatDate } from '@/utils/utils'
 import { TenantLicensesSummary } from '@/components/TenantLicensesSummary'
@@ -25,7 +25,11 @@ export function Tenants() {
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [editingTenant, setEditingTenant] = useState<Tenant | null>(null)
-  const [viewMode, setViewMode] = useState<'compact' | 'full'>('full')
+  const [viewMode, setViewMode] = useState<'compact' | 'full'>(() => {
+    // 从 localStorage 读取用户的视图模式选择
+    const savedMode = localStorage.getItem('tenantViewMode')
+    return (savedMode === 'compact' || savedMode === 'full') ? savedMode : 'full'
+  })
   const [expandedTenants, setExpandedTenants] = useState<Set<number>>(new Set())
   const [isUpdateSecretOpen, setIsUpdateSecretOpen] = useState(false)
   const [updatingTenant, setUpdatingTenant] = useState<Tenant | null>(null)
@@ -40,6 +44,11 @@ export function Tenants() {
     tenant_name: '',
     remarks: '',
   })
+
+  // 保存视图模式到 localStorage
+  useEffect(() => {
+    localStorage.setItem('tenantViewMode', viewMode)
+  }, [viewMode])
 
   const { data: tenants, isLoading } = useQuery({
     queryKey: ['tenants'],
@@ -143,6 +152,16 @@ export function Tenants() {
       toast.error(error.message)
       setIsConfigurePermissionsOpen(false)
       setConfiguringTenant(null)
+    },
+  })
+
+  const refreshLicensesMutation = useMutation({
+    mutationFn: (tenantId: number) => licenseApi.listByTenant(tenantId, true),
+    onSuccess: () => {
+      toast.success('许可证数据已刷新')
+    },
+    onError: (error: Error) => {
+      toast.error(`刷新失败: ${error.message}`)
     },
   })
 
@@ -424,6 +443,23 @@ export function Tenants() {
                             <Button
                               variant="ghost"
                               size="sm"
+                              onClick={() => refreshLicensesMutation.mutate(tenant.id)}
+                              disabled={refreshLicensesMutation.isPending}
+                              className="h-7 px-2 text-xs"
+                              title="刷新许可证"
+                            >
+                              {refreshLicensesMutation.isPending ? (
+                                <Loader2 className="h-3 w-3 animate-spin" />
+                              ) : (
+                                <>
+                                  <RotateCw className="h-3 w-3 mr-1" />
+                                  许可证
+                                </>
+                              )}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
                               onClick={() => toggleTenantExpansion(tenant.id)}
                               className="h-7 px-2"
                               title={isExpanded ? "收起" : "更多操作"}
@@ -678,6 +714,24 @@ export function Tenants() {
                           <>
                             <RefreshCw className="h-3 w-3 mr-1" />
                             检查 SPO
+                          </>
+                        )}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => refreshLicensesMutation.mutate(tenant.id)}
+                        disabled={refreshLicensesMutation.isPending}
+                      >
+                        {refreshLicensesMutation.isPending ? (
+                          <>
+                            <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                            刷新中...
+                          </>
+                        ) : (
+                          <>
+                            <RotateCw className="h-3 w-3 mr-1" />
+                            刷新许可证
                           </>
                         )}
                       </Button>
