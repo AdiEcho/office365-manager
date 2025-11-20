@@ -1202,9 +1202,32 @@ export function Tenants() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => {
-                      navigator.clipboard.writeText(consentUrl)
-                      toast.success('已复制到剪贴板')
+                    onClick={async () => {
+                      try {
+                        if (navigator.clipboard && window.isSecureContext) {
+                          await navigator.clipboard.writeText(consentUrl)
+                          toast.success('已复制到剪贴板')
+                        } else {
+                          // 回退方案：使用传统的复制方法
+                          const textArea = document.createElement('textarea')
+                          textArea.value = consentUrl
+                          textArea.style.position = 'fixed'
+                          textArea.style.left = '-999999px'
+                          document.body.appendChild(textArea)
+                          textArea.select()
+                          try {
+                            document.execCommand('copy')
+                            toast.success('已复制到剪贴板')
+                          } catch (err) {
+                            console.error('复制失败:', err)
+                            toast.error('复制失败，请手动复制链接')
+                          }
+                          document.body.removeChild(textArea)
+                        }
+                      } catch (err) {
+                        console.error('复制失败:', err)
+                        toast.error('复制失败，请手动复制链接')
+                      }
                     }}
                     className="flex-1"
                   >
