@@ -58,3 +58,5 @@ Thumbs.db
 
 # Project specific
 o365_manager.db
+
+frontend/package-lock.json
