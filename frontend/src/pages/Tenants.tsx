@@ -13,7 +13,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
-import { Plus, Trash2, CheckCircle2, XCircle, Loader2, Edit2, Users, Award, Globe, ShieldCheck, FileText, RefreshCw, AlertCircle, Ban, HelpCircle } from 'lucide-react'
+import { Plus, Trash2, CheckCircle2, XCircle, Loader2, Edit2, Users, Award, Globe, ShieldCheck, FileText, RefreshCw, AlertCircle, Ban, HelpCircle, Key } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { formatDate } from '@/utils/utils'
 import { TenantLicensesSummary } from '@/components/TenantLicensesSummary'
@@ -99,6 +99,18 @@ export function Tenants() {
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: ['tenants'] })
       toast.success(`SPO 状态检查完成: ${response.data.message}`)
+    },
+    onError: (error: Error) => {
+      toast.error(error.message)
+    },
+  })
+
+  const updateSecretMutation = useMutation({
+    mutationFn: (id: number) => tenantApi.updateSecret(id),
+    onSuccess: (response) => {
+      queryClient.invalidateQueries({ queryKey: ['tenants'] })
+      const detail = response.data.detail ? ` (${response.data.detail})` : ''
+      toast.success(`${response.data.message}${detail}`)
     },
     onError: (error: Error) => {
       toast.error(error.message)
@@ -294,7 +306,7 @@ export function Tenants() {
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-3 gap-2">
                       <Button
                         variant="outline"
                         size="sm"
@@ -318,6 +330,28 @@ export function Tenants() {
                           <>
                             <RefreshCw className="h-3 w-3 mr-1" />
                             检查 SPO
+                          </>
+                        )}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          if (confirm('将创建一个过期时间为2099-12-31的新密钥，成功后会替换现有密钥。确定要继续吗？')) {
+                            updateSecretMutation.mutate(tenant.id)
+                          }
+                        }}
+                        disabled={updateSecretMutation.isPending}
+                      >
+                        {updateSecretMutation.isPending ? (
+                          <>
+                            <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                            更新中...
+                          </>
+                        ) : (
+                          <>
+                            <Key className="h-3 w-3 mr-1" />
+                            更新密钥
                           </>
                         )}
                       </Button>

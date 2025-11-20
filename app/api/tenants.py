@@ -189,3 +189,48 @@ async def check_tenant_spo_status(
         message=spo_result["message"],
         checked_at=checked_at
     )
+
+
+@router.post("/{tenant_id}/update-secret", response_model=MessageResponse)
+async def update_tenant_secret(
+    tenant_id: int,
+    db: AsyncSession = Depends(get_db)
+):
+    result = await db.execute(select(Tenant).where(Tenant.id == tenant_id))
+    tenant = result.scalar_one_or_none()
+    
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    
+    msal_service = MSALService(
+        tenant_id=tenant.tenant_id,
+        client_id=tenant.client_id,
+        client_secret=tenant.client_secret
+    )
+    
+    validation_result = await msal_service.validate_credentials()
+    if not validation_result["valid"]:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid tenant credentials: {validation_result.get('error')}"
+        )
+    
+    graph_service = GraphAPIService(msal_service)
+    
+    try:
+        secret_result = await graph_service.update_client_secret(tenant.client_id)
+        new_secret = secret_result["client_secret"]
+        
+        tenant.client_secret = new_secret
+        await db.flush()
+        await db.refresh(tenant)
+        
+        return MessageResponse(
+            message="密钥更新成功",
+            detail=f"新密钥已生成，过期时间: {secret_result['end_date']}"
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"更新密钥失败: {str(e)}"
+        )

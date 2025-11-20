@@ -197,3 +197,39 @@ class GraphAPIService:
                     "status": "error",
                     "message": f"检查失败: {str(e)}"
                 }
+    
+    async def update_client_secret(self, application_id: str) -> Dict[str, Any]:
+        """
+        Create a new password credential for an application with expiry date of 2099-12-31
+        Returns: {"client_secret": str, "key_id": str, "end_date": str}
+        """
+        try:
+            # First, get the application object by appId (client_id)
+            filter_query = f"appId eq '{application_id}'"
+            apps_result = await self._make_request("GET", "/applications", params={"$filter": filter_query})
+            apps = apps_result.get("value", [])
+            
+            if not apps or len(apps) == 0:
+                raise Exception(f"Application with client_id {application_id} not found")
+            
+            app_object_id = apps[0]["id"]
+            
+            # Add new password credential with expiry date 2099-12-31
+            password_credential = {
+                "displayName": "O365 Manager Auto-Generated Secret",
+                "endDateTime": "2099-12-31T23:59:59Z"
+            }
+            
+            result = await self._make_request(
+                "POST",
+                f"/applications/{app_object_id}/addPassword",
+                data={"passwordCredential": password_credential}
+            )
+            
+            return {
+                "client_secret": result.get("secretText"),
+                "key_id": result.get("keyId"),
+                "end_date": result.get("endDateTime")
+            }
+        except Exception as e:
+            raise Exception(f"Failed to update client secret: {str(e)}")

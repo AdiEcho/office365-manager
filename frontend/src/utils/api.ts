@@ -145,6 +145,7 @@ export const tenantApi = {
   delete: (id: number) => api.delete(`/tenants/${id}`),
   validate: (id: number) => api.get(`/tenants/${id}/validate`),
   checkSpoStatus: (id: number) => api.get<SpoStatusResponse>(`/tenants/${id}/spo-status`),
+  updateSecret: (id: number) => api.post<{ message: string; detail?: string }>(`/tenants/${id}/update-secret`),
 }
 
 // User APIs
