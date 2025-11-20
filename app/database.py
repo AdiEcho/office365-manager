@@ -37,4 +37,14 @@ async def init_db():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     
-    print("Database initialized. Please register your first admin user.")
+    # 检查是否已存在用户
+    from app.models import User
+    from sqlalchemy import select
+    async with AsyncSessionLocal() as session:
+        result = await session.execute(select(User))
+        users = result.scalars().all()
+        
+        if not users:
+            print("Database initialized. Please register your first admin user.")
+        else:
+            print(f"Database initialized. Found {len(users)} user(s) in the system.")
