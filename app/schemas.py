@@ -33,6 +33,9 @@ class TenantResponse(BaseModel):
     is_selected: bool
     created_at: datetime
     updated_at: Optional[datetime] = None
+    credential_status: Optional[str] = None
+    credential_message: Optional[str] = None
+    credential_checked_at: Optional[datetime] = None
     spo_status: Optional[str] = None
     spo_message: Optional[str] = None
     spo_checked_at: Optional[datetime] = None

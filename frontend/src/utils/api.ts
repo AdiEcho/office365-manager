@@ -46,6 +46,9 @@ export interface Tenant {
   is_selected: boolean
   created_at: string
   updated_at?: string
+  credential_status?: string
+  credential_message?: string
+  credential_checked_at?: string
   spo_status?: string
   spo_message?: string
   spo_checked_at?: string

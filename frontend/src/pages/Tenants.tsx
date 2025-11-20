@@ -87,9 +87,11 @@ export function Tenants() {
   const validateMutation = useMutation({
     mutationFn: (id: number) => tenantApi.validate(id),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tenants'] })
       toast.success('租户凭据验证成功')
     },
     onError: (error: Error) => {
+      queryClient.invalidateQueries({ queryKey: ['tenants'] })
       toast.error(error.message)
     },
   })
@@ -165,6 +167,32 @@ export function Tenants() {
       remarks: '',
     })
     setEditingTenant(null)
+  }
+
+  const getCredentialStatusDisplay = (credentialStatus?: string) => {
+    switch (credentialStatus) {
+      case 'valid':
+        return {
+          icon: CheckCircle2,
+          text: '凭据有效',
+          color: 'text-green-600 dark:text-green-400',
+          bgColor: 'bg-green-50 dark:bg-green-900/20'
+        }
+      case 'invalid':
+        return {
+          icon: XCircle,
+          text: '凭据无效',
+          color: 'text-red-600 dark:text-red-400',
+          bgColor: 'bg-red-50 dark:bg-red-900/20'
+        }
+      default:
+        return {
+          icon: HelpCircle,
+          text: '未验证',
+          color: 'text-gray-400 dark:text-gray-500',
+          bgColor: 'bg-gray-50 dark:bg-gray-800'
+        }
+    }
   }
 
   const getSpoStatusDisplay = (spoStatus?: string) => {
@@ -263,23 +291,42 @@ export function Tenants() {
                           <div>客户端 ID: {tenant.client_id}</div>
                           {tenant.remarks && <div>备注: {tenant.remarks}</div>}
                           <div>创建时间: {formatDate(tenant.created_at)}</div>
-                          {(() => {
-                            const spoDisplay = getSpoStatusDisplay(tenant.spo_status)
-                            const SpoIcon = spoDisplay.icon
-                            return (
-                              <div className="flex items-center gap-2 pt-1">
-                                <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${spoDisplay.bgColor} ${spoDisplay.color}`}>
-                                  <SpoIcon className="h-3 w-3 mr-1" />
-                                  {spoDisplay.text}
-                                </span>
-                                {tenant.spo_checked_at && (
-                                  <span className="text-xs text-gray-500">
-                                    {formatDate(tenant.spo_checked_at)}
+                          <div className="flex flex-wrap items-center gap-2 pt-1">
+                            {(() => {
+                              const credentialDisplay = getCredentialStatusDisplay(tenant.credential_status)
+                              const CredentialIcon = credentialDisplay.icon
+                              return (
+                                <div className="flex items-center gap-2">
+                                  <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${credentialDisplay.bgColor} ${credentialDisplay.color}`}>
+                                    <CredentialIcon className="h-3 w-3 mr-1" />
+                                    {credentialDisplay.text}
                                   </span>
-                                )}
-                              </div>
-                            )
-                          })()}
+                                  {tenant.credential_checked_at && (
+                                    <span className="text-xs text-gray-500">
+                                      {formatDate(tenant.credential_checked_at)}
+                                    </span>
+                                  )}
+                                </div>
+                              )
+                            })()}
+                            {(() => {
+                              const spoDisplay = getSpoStatusDisplay(tenant.spo_status)
+                              const SpoIcon = spoDisplay.icon
+                              return (
+                                <div className="flex items-center gap-2">
+                                  <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${spoDisplay.bgColor} ${spoDisplay.color}`}>
+                                    <SpoIcon className="h-3 w-3 mr-1" />
+                                    {spoDisplay.text}
+                                  </span>
+                                  {tenant.spo_checked_at && (
+                                    <span className="text-xs text-gray-500">
+                                      {formatDate(tenant.spo_checked_at)}
+                                    </span>
+                                  )}
+                                </div>
+                              )
+                            })()}
+                          </div>
                         </CardDescription>
                       </div>
                       <div className="flex items-center gap-2">

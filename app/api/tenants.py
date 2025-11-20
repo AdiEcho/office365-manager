@@ -137,12 +137,25 @@ async def validate_tenant(
     )
     
     validation_result = await msal_service.validate_credentials()
+    checked_at = datetime.now()
     
     if not validation_result["valid"]:
+        tenant.credential_status = "invalid"
+        tenant.credential_message = "凭据无效"
+        tenant.credential_checked_at = checked_at
+        await db.flush()
+        await db.refresh(tenant)
+        
         raise HTTPException(
             status_code=400,
             detail=f"Invalid credentials: {validation_result.get('error')}"
         )
+    
+    tenant.credential_status = "valid"
+    tenant.credential_message = "凭据有效"
+    tenant.credential_checked_at = checked_at
+    await db.flush()
+    await db.refresh(tenant)
     
     return MessageResponse(
         message="Tenant credentials validated successfully"
