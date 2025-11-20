@@ -130,15 +130,6 @@ pip install -e .
 cp .env.example .env
 
 # 编辑 .env 文件
-# 至少需要修改 SECRET_KEY
-```
-
-**.env 示例:**
-```env
-DATABASE_URL=sqlite+aiosqlite:///./o365_manager.db
-API_HOST=0.0.0.0
-API_PORT=8000
-SECRET_KEY=your-secret-key-change-in-production
 ```
 
 #### 第 5 步: 安装前端依赖
