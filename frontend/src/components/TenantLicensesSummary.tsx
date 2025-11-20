@@ -75,7 +75,7 @@ export function TenantLicensesSummary({ tenantId, compact = false }: TenantLicen
             return (
               <div key={license.sku_id} className="text-xs">
                 <div className="flex items-center justify-between mb-0.5">
-                  <span className="text-muted-foreground truncate max-w-[140px]" title={licenseName}>
+                  <span className="text-muted-foreground truncate max-w-[240px]" title={licenseName}>
                     {licenseName}
                   </span>
                   <span className="text-xs font-mono">
