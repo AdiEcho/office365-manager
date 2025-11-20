@@ -308,10 +308,19 @@ class GraphAPIService:
         Configure required API permissions for an application
         
         Permissions to be configured:
-        - User.Read.All (Application)
-        - Organization.Read.All (Application)
-        - Reports.Read.All (Application)
-        - Directory.Read.All (Application)
+        Core permissions (Required):
+        - User.ReadWrite.All (Application) - User management
+        - Directory.ReadWrite.All (Application) - Directory read/write
+        - Organization.Read.All (Application) - Organization info
+        - Reports.Read.All (Application) - Usage reports
+        
+        Advanced features (Recommended):
+        - RoleManagement.ReadWrite.Directory (Application) - Role management
+        - Domain.ReadWrite.All (Application) - Domain management
+        - Application.ReadWrite.All (Application) - App configuration and secret management
+        
+        Optional:
+        - Sites.FullControl.All (Application) - SharePoint status check
         
         Args:
             application_id: The application's client_id (appId)
@@ -336,9 +345,14 @@ class GraphAPIService:
                     {
                         "resourceAppId": "00000003-0000-0000-c000-000000000000",  # Microsoft Graph
                         "resourceAccess": [
+                            # Core permissions (Required)
                             {
-                                "id": "df021288-bdef-4463-88db-98f22de89214",  # User.Read.All
+                                "id": "741f803b-c850-494e-b5df-cde7c675a1ca",  # User.ReadWrite.All
                                 "type": "Role"  # Application permission
+                            },
+                            {
+                                "id": "19dbc75e-c2e2-444c-a770-ec69d8559fc7",  # Directory.ReadWrite.All
+                                "type": "Role"
                             },
                             {
                                 "id": "498476ce-e0fe-48b0-b801-37ba7e2685c6",  # Organization.Read.All
@@ -348,8 +362,22 @@ class GraphAPIService:
                                 "id": "230c1aed-a721-4c5d-9cb4-a90514e508ef",  # Reports.Read.All
                                 "type": "Role"
                             },
+                            # Advanced features (Recommended)
                             {
-                                "id": "7ab1d382-f21e-4acd-a863-ba3e13f7da61",  # Directory.Read.All
+                                "id": "9e3f62cf-ca93-4989-b6ce-bf83c28f9fe8",  # RoleManagement.ReadWrite.Directory
+                                "type": "Role"
+                            },
+                            {
+                                "id": "7e05723c-0bb0-42da-be95-ae9f08a6e53c",  # Domain.ReadWrite.All
+                                "type": "Role"
+                            },
+                            {
+                                "id": "1bfefb4e-e0b5-418b-a88f-73c46d2cc8e9",  # Application.ReadWrite.All
+                                "type": "Role"
+                            },
+                            # Optional
+                            {
+                                "id": "a82116e5-55eb-4c41-a434-62fe8a61c773",  # Sites.FullControl.All
                                 "type": "Role"
                             }
                         ]
@@ -371,10 +399,14 @@ class GraphAPIService:
             # For now, we'll return the tenant_id as part of the response
             
             permissions_list = [
-                "User.Read.All",
+                "User.ReadWrite.All",
+                "Directory.ReadWrite.All",
                 "Organization.Read.All", 
                 "Reports.Read.All",
-                "Directory.Read.All"
+                "RoleManagement.ReadWrite.Directory",
+                "Domain.ReadWrite.All",
+                "Application.ReadWrite.All",
+                "Sites.FullControl.All"
             ]
             
             return {
