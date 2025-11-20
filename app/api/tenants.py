@@ -264,16 +264,25 @@ async def update_tenant_secret(
 @router.post("/{tenant_id}/configure-permissions")
 async def configure_tenant_permissions(
     tenant_id: int,
-    db: Session = Depends(get_db),
-    graph_service: GraphAPIService = Depends(get_graph_service)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Configure API permissions for a tenant's application
     """
     try:
-        tenant = db.query(Tenant).filter(Tenant.id == tenant_id).first()
+        # Get tenant
+        result = await db.execute(select(Tenant).filter(Tenant.id == tenant_id))
+        tenant = result.scalar_one_or_none()
         if not tenant:
             raise HTTPException(status_code=404, detail="租户未找到")
+        
+        # Create Graph API service for this tenant
+        msal_service = MSALService(
+            tenant_id=tenant.tenant_id,
+            client_id=tenant.client_id,
+            client_secret=tenant.client_secret
+        )
+        graph_service = GraphAPIService(msal_service)
         
         # Configure permissions via Graph API
         result = await graph_service.configure_application_permissions(tenant.client_id)
