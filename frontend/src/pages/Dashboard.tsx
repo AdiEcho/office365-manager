@@ -234,112 +234,113 @@ export function Dashboard() {
                 </h3>
                 
                 <div className="space-y-4">
-                  {/* 4.1 添加权限 */}
+                  {/* 方法一：自动配置（推荐） */}
+                  <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border-2 border-purple-200 dark:border-purple-800">
+                    <div className="flex items-start gap-2 mb-3">
+                      <Sparkles className="h-5 w-5 text-purple-600 dark:text-purple-400 mt-0.5 shrink-0" />
+                      <div className="flex-1">
+                        <p className="text-sm font-semibold text-purple-800 dark:text-purple-200 mb-1">
+                          方法一：自动配置（推荐）⭐
+                        </p>
+                        <p className="text-xs text-purple-700 dark:text-purple-300">
+                          只需手动添加一个前置权限，系统将自动配置其他所有权限
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      <div>
+                        <p className="text-sm font-medium text-purple-800 dark:text-purple-200 mb-2">前置步骤（必需）：</p>
+                        <ol className="space-y-1.5 text-sm text-purple-700 dark:text-purple-300 list-decimal list-inside ml-2">
+                          <li>点击 <strong>"API 权限"</strong> → <strong>"添加权限"</strong> → <strong>"Microsoft Graph"</strong> → <strong>"应用程序权限"</strong></li>
+                          <li>搜索并添加 <code className="bg-purple-100 dark:bg-purple-900 px-1.5 py-0.5 rounded text-xs font-mono">Application.ReadWrite.All</code> 权限</li>
+                          <li>点击 <strong>"授予管理员同意"</strong> 按钮授权该权限</li>
+                        </ol>
+                      </div>
+                      
+                      <div>
+                        <p className="text-sm font-medium text-purple-800 dark:text-purple-200 mb-2">使用系统自动配置：</p>
+                        <ol className="space-y-1.5 text-sm text-purple-700 dark:text-purple-300 list-decimal list-inside ml-2" start={4}>
+                          <li>在本系统中添加租户后，点击 <strong>"配置权限"</strong> 按钮</li>
+                          <li>系统将自动添加所有需要的权限</li>
+                          <li>使用生成的管理员同意链接完成最终授权</li>
+                        </ol>
+                      </div>
+
+                      <div className="p-2 bg-purple-100 dark:bg-purple-900/40 rounded border border-purple-300 dark:border-purple-700">
+                        <p className="text-xs text-purple-800 dark:text-purple-200">
+                          <strong>系统将自动配置：</strong> User.ReadWrite.All, Directory.ReadWrite.All, Organization.Read.All, Reports.Read.All, RoleManagement.ReadWrite.Directory, Domain.ReadWrite.All, Sites.FullControl.All
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 方法二：完全手动配置 */}
                   <div className="space-y-3">
                     <div className="flex items-center gap-2 mb-2">
-                      <div className="h-6 w-6 rounded-full bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-xs font-semibold text-blue-600">
-                        4.1
+                      <div className="h-6 w-6 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-xs font-semibold text-slate-600 dark:text-slate-400">
+                        或
                       </div>
-                      <h4 className="text-sm font-semibold">添加权限</h4>
+                      <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-300">方法二：完全手动配置</h4>
                     </div>
-                    <p className="text-sm text-muted-foreground pl-8">
-                      在应用程序页面，点击 <strong>"API 权限"</strong> → <strong>"添加权限"</strong> → <strong>"Microsoft Graph"</strong> → 选择 <strong>"应用程序权限"</strong>
+                    
+                    <p className="text-xs text-muted-foreground pl-8 mb-3">
+                      适用于不想授予 Application.ReadWrite.All 权限的场景（将无法使用自动更新客户端密钥功能）
                     </p>
-                    <div className="pl-8">
-                      <p className="text-sm font-medium mb-2">添加以下权限：</p>
-                      <div className="grid gap-3 md:grid-cols-2">
-                        <div className="rounded-lg border p-3 bg-slate-50 dark:bg-slate-900">
-                          <h5 className="text-xs font-semibold text-blue-600 mb-2">用户管理</h5>
-                          <ul className="space-y-1 text-xs text-muted-foreground">
-                            <li>• User.ReadWrite.All</li>
-                            <li>• User.ManageIdentities.All</li>
-                          </ul>
+                    
+                    <div className="pl-8 space-y-3">
+                      <div>
+                        <p className="text-sm font-medium mb-2">步骤：</p>
+                        <ol className="space-y-1.5 text-sm text-muted-foreground list-decimal list-inside">
+                          <li>点击 <strong>"API 权限"</strong> → <strong>"添加权限"</strong> → <strong>"Microsoft Graph"</strong> → <strong>"应用程序权限"</strong></li>
+                          <li>根据需要的功能添加以下权限</li>
+                          <li>所有权限添加完成后，点击 <strong>"授予管理员同意"</strong></li>
+                          <li>确保所有权限的状态列显示绿色勾号</li>
+                        </ol>
+                      </div>
+
+                      <div>
+                        <p className="text-sm font-medium mb-2">核心权限（必需）：</p>
+                        <div className="grid gap-2 md:grid-cols-2">
+                          <div className="rounded-lg border p-2.5 bg-slate-50 dark:bg-slate-900">
+                            <ul className="space-y-1 text-xs text-muted-foreground">
+                              <li>• User.ReadWrite.All</li>
+                              <li>• Directory.ReadWrite.All</li>
+                            </ul>
+                          </div>
+                          <div className="rounded-lg border p-2.5 bg-slate-50 dark:bg-slate-900">
+                            <ul className="space-y-1 text-xs text-muted-foreground">
+                              <li>• Organization.Read.All</li>
+                              <li>• Reports.Read.All</li>
+                            </ul>
+                          </div>
                         </div>
-                        
-                        <div className="rounded-lg border p-3 bg-slate-50 dark:bg-slate-900">
-                          <h5 className="text-xs font-semibold text-blue-600 mb-2">目录和角色</h5>
-                          <ul className="space-y-1 text-xs text-muted-foreground">
-                            <li>• Directory.ReadWrite.All</li>
-                            <li>• RoleManagement.ReadWrite.Directory</li>
-                          </ul>
-                        </div>
-                        
-                        <div className="rounded-lg border p-3 bg-slate-50 dark:bg-slate-900">
-                          <h5 className="text-xs font-semibold text-blue-600 mb-2">域名管理</h5>
-                          <ul className="space-y-1 text-xs text-muted-foreground">
-                            <li>• Domain.ReadWrite.All</li>
-                          </ul>
-                        </div>
-                        
-                        <div className="rounded-lg border p-3 bg-slate-50 dark:bg-slate-900">
-                          <h5 className="text-xs font-semibold text-blue-600 mb-2">报告和组织</h5>
-                          <ul className="space-y-1 text-xs text-muted-foreground">
-                            <li>• Reports.Read.All</li>
-                            <li>• Organization.Read.All</li>
-                          </ul>
-                        </div>
-                        
-                        <div className="rounded-lg border p-3 bg-slate-50 dark:bg-slate-900">
-                          <h5 className="text-xs font-semibold text-blue-600 mb-2">可选权限</h5>
-                          <ul className="space-y-1 text-xs text-muted-foreground">
-                            <li>• Application.ReadWrite.All</li>
-                            <li>• Sites.FullControl.All</li>
-                          </ul>
+                      </div>
+
+                      <div>
+                        <p className="text-sm font-medium mb-2">高级功能（可选）：</p>
+                        <div className="grid gap-2 md:grid-cols-2">
+                          <div className="rounded-lg border p-2.5 bg-slate-50 dark:bg-slate-900">
+                            <ul className="space-y-1 text-xs text-muted-foreground">
+                              <li>• RoleManagement.ReadWrite.Directory</li>
+                              <li>• Domain.ReadWrite.All</li>
+                            </ul>
+                          </div>
+                          <div className="rounded-lg border p-2.5 bg-slate-50 dark:bg-slate-900">
+                            <ul className="space-y-1 text-xs text-muted-foreground">
+                              <li>• Sites.FullControl.All</li>
+                            </ul>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* 4.2 授予管理员同意 */}
-                  <div className="space-y-3 border-t pt-4">
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="h-6 w-6 rounded-full bg-green-50 dark:bg-green-900/30 flex items-center justify-center text-xs font-semibold text-green-600">
-                        4.2
-                      </div>
-                      <h4 className="text-sm font-semibold flex items-center gap-1.5">
-                        <ShieldCheck className="h-4 w-4" />
-                        授予管理员同意
-                      </h4>
-                    </div>
-                    
-                    <div className="pl-8 space-y-3">
-                      {/* 推荐方式 */}
-                      <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
-                        <div className="flex items-start gap-2">
-                          <Sparkles className="h-5 w-5 text-purple-600 dark:text-purple-400 mt-0.5 shrink-0" />
-                          <div className="flex-1">
-                            <p className="text-sm font-semibold text-purple-800 dark:text-purple-200 mb-2">
-                              推荐：使用系统自动配置 ⭐
-                            </p>
-                            <ol className="space-y-1.5 text-sm text-purple-700 dark:text-purple-300 list-decimal list-inside">
-                              <li>手动添加 <code className="bg-purple-100 dark:bg-purple-900 px-1.5 py-0.5 rounded text-xs">Application.ReadWrite.All</code> 权限</li>
-                              <li>点击 <strong>"授予管理员同意"</strong> 按钮授权该权限</li>
-                              <li>在本系统中添加租户后，点击 <strong>"配置权限"</strong> 按钮</li>
-                              <li>系统将自动配置所需的所有权限</li>
-                              <li>使用生成的管理员同意链接完成最终授权</li>
-                            </ol>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* 手动方式 */}
-                      <div>
-                        <p className="text-sm text-muted-foreground font-medium mb-2">手动配置方式：</p>
-                        <ol className="space-y-1.5 text-sm text-muted-foreground list-decimal list-inside">
-                          <li>添加完所有权限后，在 <strong>"API 权限"</strong> 页面</li>
-                          <li>点击 <strong>"授予 [租户名称] 的管理员同意"</strong> 按钮</li>
-                          <li>在弹出窗口中点击 <strong>"是"</strong> 确认授予同意</li>
-                          <li>等待页面刷新，确保所有权限的 <strong>"状态"</strong> 列显示绿色勾号</li>
-                        </ol>
-                      </div>
-
-                      {/* 重要提示 */}
-                      <div className="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
-                        <p className="text-sm text-amber-800 dark:text-amber-200">
-                          <strong>⚠️ 重要：</strong>必须授予管理员同意，否则应用程序无法访问 Microsoft Graph API，系统功能将无法正常使用
-                        </p>
-                      </div>
-                    </div>
+                  {/* 重要提示 */}
+                  <div className="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
+                    <p className="text-sm text-amber-800 dark:text-amber-200">
+                      <strong>⚠️ 重要：</strong>无论选择哪种方法，都必须授予管理员同意，否则应用程序无法访问 Microsoft Graph API
+                    </p>
                   </div>
                 </div>
               </div>
