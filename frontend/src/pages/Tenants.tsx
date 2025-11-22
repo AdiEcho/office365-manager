@@ -13,7 +13,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
-import { Plus, Trash2, CheckCircle2, XCircle, Loader2, Edit2, Users, Award, Globe, ShieldCheck, FileText, RefreshCw, AlertCircle, Ban, HelpCircle, Key, ChevronUp, MoreHorizontal, RotateCw } from 'lucide-react'
+import { Plus, Trash2, CheckCircle2, XCircle, Loader2, Edit2, Users, Award, Globe, ShieldCheck, FileText, RefreshCw, AlertCircle, Ban, HelpCircle, Key, ChevronUp, MoreHorizontal, RotateCw, Copy, ExternalLink } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { formatDate } from '@/utils/utils'
 import { TenantLicensesSummary } from '@/components/TenantLicensesSummary'
@@ -1223,6 +1223,11 @@ export function Tenants() {
                     variant="outline"
                     size="sm"
                     onClick={async () => {
+                      if (!consentUrl) {
+                        toast.error('授权链接为空')
+                        return
+                      }
+                      
                       try {
                         if (navigator.clipboard && window.isSecureContext) {
                           await navigator.clipboard.writeText(consentUrl)
@@ -1233,11 +1238,17 @@ export function Tenants() {
                           textArea.value = consentUrl
                           textArea.style.position = 'fixed'
                           textArea.style.left = '-999999px'
+                          textArea.style.top = '0'
                           document.body.appendChild(textArea)
+                          textArea.focus()
                           textArea.select()
                           try {
-                            document.execCommand('copy')
-                            toast.success('已复制到剪贴板')
+                            const successful = document.execCommand('copy')
+                            if (successful) {
+                              toast.success('已复制到剪贴板')
+                            } else {
+                              toast.error('复制失败，请手动复制链接')
+                            }
                           } catch (err) {
                             console.error('复制失败:', err)
                             toast.error('复制失败，请手动复制链接')
@@ -1251,6 +1262,7 @@ export function Tenants() {
                     }}
                     className="flex-1"
                   >
+                    <Copy className="h-3 w-3 mr-1" />
                     复制链接
                   </Button>
                   <Button
@@ -1259,6 +1271,7 @@ export function Tenants() {
                     onClick={() => window.open(consentUrl, '_blank')}
                     className="flex-1"
                   >
+                    <ExternalLink className="h-3 w-3 mr-1" />
                     在新标签页打开
                   </Button>
                 </div>
