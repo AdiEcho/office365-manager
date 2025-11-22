@@ -10,15 +10,8 @@ COPY frontend/ ./
 RUN npm run build
 
 
-# ----------------------------
-# 后端阶段（使用 uv 最优方式）
-# ----------------------------
-FROM python:3.12-slim AS backend-base
-
-# 安装 uv（单文件，开销非常小）
-RUN apt-get update && apt-get install -y --no-install-recommends curl \
-    && curl -LsSf https://astral.sh/uv/install.sh | sh \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+# Python后端阶段
+FROM astral/uv:python3.12-bookworm-slim
 
 WORKDIR /app
 
@@ -26,7 +19,7 @@ WORKDIR /app
 COPY pyproject.toml uv.lock ./
 
 # 安装 prod 依赖（不构建 venv，会自动放入系统 python）
-RUN uv sync --no-dev --frozen
+RUN uv sync --no-dev
 
 
 # ----------------------------
