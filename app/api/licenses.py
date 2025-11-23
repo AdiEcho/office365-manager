@@ -45,13 +45,23 @@ async def list_licenses(
         for sku in skus:
             prepaid_units = sku.get("prepaidUnits", {})
             sku_part_number = sku.get("skuPartNumber")
+            
+            # 尝试获取过期时间（如果存在）
+            expires_at = None
+            if "nextLifecycleDateTime" in sku and sku["nextLifecycleDateTime"]:
+                try:
+                    expires_at = datetime.fromisoformat(sku["nextLifecycleDateTime"].replace('Z', '+00:00'))
+                except Exception as e:
+                    logger.warning(f"Failed to parse nextLifecycleDateTime for {sku_part_number}: {e}")
+            
             licenses.append(O365LicenseResponse(
                 sku_id=sku.get("skuId"),
                 sku_part_number=sku_part_number,
                 sku_name_cn=get_sku_name_cn(sku_part_number),
                 consumed_units=sku.get("consumedUnits", 0),
                 enabled_units=prepaid_units.get("enabled", 0),
-                available_units=prepaid_units.get("enabled", 0) - sku.get("consumedUnits", 0)
+                available_units=prepaid_units.get("enabled", 0) - sku.get("consumedUnits", 0),
+                expires_at=expires_at
             ))
         
         logger.info(f"Successfully fetched {len(licenses)} licenses")
@@ -122,7 +132,8 @@ async def list_licenses_by_tenant(
                         sku_name_cn=cache.sku_name_cn,
                         consumed_units=cache.consumed_units,
                         enabled_units=cache.enabled_units,
-                        available_units=cache.available_units
+                        available_units=cache.available_units,
+                        expires_at=cache.expires_at
                     ))
                 return licenses
         
@@ -155,6 +166,14 @@ async def list_licenses_by_tenant(
             available_units = enabled_units - consumed_units
             sku_name_cn = get_sku_name_cn(sku_part_number)
             
+            # 尝试获取过期时间（如果存在）
+            expires_at = None
+            if "nextLifecycleDateTime" in sku and sku["nextLifecycleDateTime"]:
+                try:
+                    expires_at = datetime.fromisoformat(sku["nextLifecycleDateTime"].replace('Z', '+00:00'))
+                except Exception as e:
+                    logger.warning(f"Failed to parse nextLifecycleDateTime for {sku_part_number}: {e}")
+            
             # Add to response
             licenses.append(O365LicenseResponse(
                 sku_id=sku_id,
@@ -162,7 +181,8 @@ async def list_licenses_by_tenant(
                 sku_name_cn=sku_name_cn,
                 consumed_units=consumed_units,
                 enabled_units=enabled_units,
-                available_units=available_units
+                available_units=available_units,
+                expires_at=expires_at
             ))
             
             # Save to cache
@@ -174,6 +194,7 @@ async def list_licenses_by_tenant(
                 consumed_units=consumed_units,
                 enabled_units=enabled_units,
                 available_units=available_units,
+                expires_at=expires_at,
                 cached_at=current_time
             )
             db.add(cache_entry)

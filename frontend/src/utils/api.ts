@@ -95,6 +95,7 @@ export interface License {
   consumed_units: number
   enabled_units: number
   available_units: number
+  expires_at?: string
 }
 
 export interface Domain {

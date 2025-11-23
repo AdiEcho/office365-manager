@@ -112,6 +112,7 @@ class O365LicenseResponse(BaseModel):
     consumed_units: int
     enabled_units: int
     available_units: int
+    expires_at: Optional[datetime] = None
 
 
 class O365RoleAssignment(BaseModel):
